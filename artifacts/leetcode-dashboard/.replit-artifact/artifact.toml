@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "LeetCode Git Dashboard"
+version = "1.0.0"
+id = "artifacts/leetcode-dashboard"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 25133
+
+[services.development]
+run = "pnpm --filter @workspace/leetcode-dashboard run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/leetcode-dashboard", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/leetcode-dashboard/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25133"
+BASE_PATH = "/"

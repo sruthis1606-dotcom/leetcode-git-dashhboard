@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: stats
+    description: LeetCode and GitHub stats
 paths:
   /healthz:
     get:
@@ -24,6 +26,45 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /stats:
+    post:
+      operationId: fetchStats
+      tags: [stats]
+      summary: Fetch LeetCode and GitHub stats for a user
+      description: Proxies LeetCode GraphQL and GitHub APIs to return combined stats
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StatsInput"
+      responses:
+        "200":
+          description: Stats fetched successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserStats"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +75,54 @@ components:
       required:
         - status
 
+    StatsInput:
+      type: object
+      required:
+        - username
+      properties:
+        username:
+          type: string
+          description: LeetCode username
+        email:
+          type: ["string", "null"]
+          description: User's email (optional, just displayed)
+        github:
+          type: ["string", "null"]
+          description: GitHub username (optional)
+
+    UserStats:
+      type: object
+      required:
+        - username
+        - email
+        - totalSolved
+        - easySolved
+        - mediumSolved
+        - hardSolved
+        - ranking
+        - githubRepos
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+        totalSolved:
+          type: integer
+        easySolved:
+          type: integer
+        mediumSolved:
+          type: integer
+        hardSolved:
+          type: integer
+        ranking:
+          type: ["integer", "null"]
+        githubRepos:
+          type: integer
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string

@@ -5,9 +5,6 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-export interface HealthStatus {
-  status: string;
-}
 
 export interface StatsInput {
   /** LeetCode username */
@@ -23,20 +20,3 @@ export interface StatsInput {
      */
   github?: string | null;
 }
-
-export interface UserStats {
-  username: string;
-  email: string;
-  totalSolved: number;
-  easySolved: number;
-  mediumSolved: number;
-  hardSolved: number;
-  /** @nullable */
-  ranking: number | null;
-  githubRepos: number;
-}
-
-export interface ErrorResponse {
-  error: string;
-}
-
