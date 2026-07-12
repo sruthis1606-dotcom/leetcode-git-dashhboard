@@ -5,61 +5,50 @@ interface ProgressRingProps {
   value: number;
   max: number;
   label: string;
-  colorClass: string; // stroke color class
-  textColorClass: string;
-  className?: string;
+  color: string;         // stroke hex or tailwind stroke class
+  bgColor: string;
+  labelColor: string;
+  delay?: number;
 }
 
-export function ProgressRing({ value, max, label, colorClass, textColorClass, className }: ProgressRingProps) {
-  const radius = 38;
+export function ProgressRing({ value, max, label, color, bgColor, labelColor, delay = 0 }: ProgressRingProps) {
+  const radius = 40;
   const circumference = 2 * Math.PI * radius;
   const percent = Math.min(value / max, 1);
   const offset = circumference - percent * circumference;
 
   return (
-    <div className={cn("flex flex-col items-center justify-center w-full group", className)}>
-      <div className="relative flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
-        <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 100 100">
-          {/* Background track */}
+    <div
+      className="group flex flex-col items-center gap-3 animate-in fade-in fill-mode-both"
+      style={{ animationDelay: `${delay}ms` }}
+    >
+      <div className="relative flex items-center justify-center">
+        <svg className="w-28 h-28 -rotate-90" viewBox="0 0 100 100">
           <circle
-            className="text-muted stroke-current opacity-30"
-            strokeWidth="6"
-            cx="50"
-            cy="50"
-            r={radius}
+            cx="50" cy="50" r={radius}
             fill="transparent"
+            strokeWidth="7"
+            className={bgColor}
           />
-          {/* Progress track */}
           <circle
-            className={cn("stroke-current transition-all duration-1000 ease-out", colorClass)}
-            strokeWidth="6"
-            strokeLinecap="round"
-            cx="50"
-            cy="50"
-            r={radius}
+            cx="50" cy="50" r={radius}
             fill="transparent"
+            strokeWidth="7"
+            strokeLinecap="round"
+            className={color}
             strokeDasharray={circumference}
             strokeDashoffset={offset}
+            style={{ transition: 'stroke-dashoffset 1s ease-out' }}
           />
         </svg>
-        
-        {/* Centered Stats */}
-        <div className="absolute flex flex-col items-center justify-center text-center">
-          <span className={cn("text-3xl font-bold font-mono tracking-tighter", textColorClass)}>
-            {value}
-          </span>
-          <span className="text-[11px] text-muted-foreground font-mono mt-0 border-t border-border/40 pt-[1px] w-4/5 text-center">
-            /{max}
-          </span>
+        <div className="absolute flex flex-col items-center">
+          <span className={cn('text-2xl font-bold tracking-tight', labelColor)}>{value}</span>
+          <span className="text-[10px] text-neutral-400 dark:text-neutral-500">/{max}</span>
         </div>
       </div>
-      
-      {/* Label and Ratio */}
-      <div className="mt-4 flex flex-col items-center">
-        <span className="text-sm font-semibold tracking-wider uppercase text-foreground">{label}</span>
-        <span className="text-xs text-muted-foreground font-mono mt-1 opacity-70">
-          {(percent * 100).toFixed(1)}% solved
-        </span>
+      <div className="text-center">
+        <span className={cn('text-xs font-semibold uppercase tracking-wider', labelColor)}>{label}</span>
+        <p className="text-[10px] text-neutral-400 dark:text-neutral-500 mt-0.5">{(percent * 100).toFixed(1)}% solved</p>
       </div>
     </div>
   );

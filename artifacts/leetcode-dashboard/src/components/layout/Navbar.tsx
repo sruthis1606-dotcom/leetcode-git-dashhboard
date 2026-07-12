@@ -1,13 +1,29 @@
-import React from 'react';
-import { useThemeSystem } from '@/components/ui/mask-view-transition-theme-toggle';
+import React, { useState, useRef, useEffect } from 'react';
 import { flushSync } from 'react-dom';
-import { Moon, Sun, Terminal } from 'lucide-react';
+import { useThemeSystem } from '@/components/ui/mask-view-transition-theme-toggle';
+import { Sun, Moon } from 'lucide-react';
 import { Link } from 'wouter';
+
+const maskGifUrl = "https://media.tenor.com/cyORI7kwShQAAAAi/shigure-ui-dance.gif";
+const duration = "1.5s";
 
 export function Navbar() {
   const { theme, toggleTheme } = useThemeSystem();
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const handleThemeChange = (newTheme: "light" | "dark") => {
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleThemeChange = (newTheme: 'light' | 'dark') => {
+    setIsOpen(false);
     if (newTheme === theme) return;
     if (!document.startViewTransition) {
       toggleTheme(newTheme);
@@ -17,9 +33,6 @@ export function Navbar() {
       flushSync(() => { toggleTheme(newTheme); });
     });
   };
-
-  const maskGifUrl = "https://media.tenor.com/cyORI7kwShQAAAAi/shigure-ui-dance.gif";
-  const duration = "1.5s";
 
   return (
     <>
@@ -46,9 +59,7 @@ export function Navbar() {
           animation: scale ${duration};
           animation-fill-mode: both;
         }
-        ::view-transition-old(root), ::view-transition-new(root) {
-          mix-blend-mode: normal;
-        }
+        ::view-transition-old(root), ::view-transition-new(root) { mix-blend-mode: normal; }
         @keyframes scale {
           0% { -webkit-mask-size: 0; mask-size: 0; }
           10% { -webkit-mask-size: 50vmax; mask-size: 50vmax; }
@@ -56,21 +67,80 @@ export function Navbar() {
           100% { -webkit-mask-size: 2000vmax; mask-size: 2000vmax; }
         }
       `}</style>
-      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto max-w-6xl flex h-16 items-center justify-between px-4 md:px-8">
-          <Link href="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
-            <Terminal className="h-6 w-6 text-primary" />
-            <span className="font-bold font-mono tracking-tight text-lg">LC_GIT_DASH</span>
-          </Link>
-          <button
-            onClick={() => handleThemeChange(theme === 'dark' ? 'light' : 'dark')}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border bg-background hover:bg-accent hover:text-accent-foreground transition-colors"
-            aria-label="Toggle theme"
-          >
-            {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-          </button>
-        </div>
-      </header>
+
+      <div className="w-full px-6 pt-5 flex justify-center">
+        <header className="w-full max-w-5xl rounded-full border border-neutral-200/80 bg-white/75 backdrop-blur-md px-8 py-3.5 shadow-sm dark:border-neutral-800/80 dark:bg-neutral-900/75 transition-all duration-300">
+          <div className="flex items-center justify-between">
+
+            {/* Logo */}
+            <Link href="/" className="flex items-center gap-2 cursor-pointer group">
+              <div className="h-6 w-6 rounded-lg bg-indigo-600 dark:bg-indigo-500 flex items-center justify-center text-white font-bold text-xs shadow-sm group-hover:scale-105 transition-transform duration-200">
+                L
+              </div>
+              <span className="font-semibold text-neutral-900 dark:text-white tracking-tight text-sm">
+                LeetCode Git<span className="text-indigo-600 dark:text-indigo-400">.</span>
+              </span>
+            </Link>
+
+            {/* Nav links */}
+            <nav className="hidden md:flex items-center gap-8">
+              <a href="#" className="text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                Dashboard
+              </a>
+              <a href="#" className="text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                Compare
+              </a>
+              <a href="#" className="text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                Leaderboard
+              </a>
+            </nav>
+
+            {/* Right actions */}
+            <div className="flex items-center gap-3">
+              {/* Theme toggle */}
+              <div className="relative inline-block text-left" ref={dropdownRef}>
+                <button
+                  onClick={() => setIsOpen(!isOpen)}
+                  className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-neutral-200 bg-white text-neutral-700 shadow-sm transition-all hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800"
+                  aria-label="Toggle theme"
+                >
+                  {theme === 'dark' ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
+                </button>
+
+                {isOpen && (
+                  <div className="absolute right-0 mt-2 w-28 origin-top-right rounded-xl border border-neutral-200 bg-white p-1 shadow-lg dark:border-neutral-800 dark:bg-neutral-950 z-[100]">
+                    <button
+                      onClick={() => handleThemeChange('light')}
+                      className={`flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-1.5 text-xs transition-colors ${
+                        theme === 'light'
+                          ? 'bg-neutral-100 text-neutral-900 dark:bg-neutral-800 dark:text-white font-medium'
+                          : 'text-neutral-600 hover:bg-neutral-50 dark:text-neutral-400 dark:hover:bg-neutral-900'
+                      }`}
+                    >
+                      <Sun className="h-3 w-3" /> Light
+                    </button>
+                    <button
+                      onClick={() => handleThemeChange('dark')}
+                      className={`flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-1.5 text-xs transition-colors ${
+                        theme === 'dark'
+                          ? 'bg-neutral-100 text-neutral-900 dark:bg-neutral-800 dark:text-white font-medium'
+                          : 'text-neutral-600 hover:bg-neutral-50 dark:text-neutral-400 dark:hover:bg-neutral-900'
+                      }`}
+                    >
+                      <Moon className="h-3 w-3" /> Dark
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <button className="hidden sm:inline-flex items-center justify-center rounded-full bg-indigo-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 transition-all cursor-pointer shadow-sm">
+                Get Started
+              </button>
+            </div>
+
+          </div>
+        </header>
+      </div>
     </>
   );
 }
